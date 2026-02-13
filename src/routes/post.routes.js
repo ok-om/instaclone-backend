@@ -4,7 +4,7 @@ const postcontroller = require("../controller/post.controller")
 const multer = require("multer")
 const upload  = multer({ storage: multer.memoryStorage()})
 
-postrouter.post("/",upload.single('ironman'),postcontroller.createPostController)
+postrouter.post("/",upload.single('img'),postcontroller.createPostController)
 
 
 
