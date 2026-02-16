@@ -21,7 +21,7 @@ if(!token){
  try{
      decode  = jwt.verify(token,process.env.JWT_SECRETE)
  }catch(err){
-   res.status(401).json({
+   return res.status(401).json({
     msg:"token is not authorized"
    })
  }
@@ -48,8 +48,84 @@ if(!token){
 
 }
 
+async function getpostcontroller(req,res) {
+    const token = req.cookies.token
+    
+    if(!token){
+        return res.status(401).json({
+            msg:"Unauthorized access..."
+        })
+    }
+
+    let decode=null;
+    try{
+         decode =  jwt.verify(token,process.env.JWT_SECRETE)
+}catch(err){
+  return  res.status(401).json({
+        msg:"Token is invalid..."
+    })
+}
+
+    const post = await postmodel.find({
+        userid:decode.id
+    })
+    
+    res.status(200).json({
+        msg:"post is fetched successfully...",
+        post
+    })
+}
+
+async function getdetailPostcontroller(req,res) {
+    const token = req.cookies.token;
+
+    if(!token){
+        return res.status(401).json({
+            msg:"Unauthorized access..."
+        })
+    }
+    
+    const userid = req.params.postid
+ let decode = null;
+
+try{
+    decode =  jwt.verify(token,process.env.JWT_SECRETE) 
+}catch(err){
+    return res.status(401).json({
+       msg:"Invalid Token...."
+    })
+}
+
+   
+
+    const post = await postmodel.findById(userid)
 
 
+
+    if(!post){
+        return res.status(404).json({
+            msg:"post not found"
+        })
+    }
+
+    const isvaliduser  = post.userid.toString() === decode.id
+
+
+    if(!isvaliduser){
+        return res.status(403).json({
+            msg:"user not have permission to access this..."
+        })
+    }
+
+
+    return res.status(200).json({
+        msg:"post fetched successfully...",
+        post
+    })
+
+}
 module.exports ={
-    createPostController
+    createPostController,
+    getpostcontroller,
+    getdetailPostcontroller
 }
