@@ -7,24 +7,6 @@ const imagekit = new ImageKit({
     privateKey: process.env.IMAGEKIT_KEY
 })
 async function createPostController(req,res){
- console.log(req.body,req.file)
-
-const token = req.cookies.token
-
-if(!token){
-    return res.status(401).json({
-        msg:"you dont have access to it reason not Login/Registered"
-    })
-}
-  let decode = null
-
- try{
-     decode  = jwt.verify(token,process.env.JWT_SECRETE)
- }catch(err){
-   return res.status(401).json({
-    msg:"token is not authorized"
-   })
- }
 
   const file = await imagekit.files.upload({
     file: await toFile(Buffer.from(req.file.buffer),"file"),
@@ -36,7 +18,7 @@ if(!token){
   const post = await postmodel.create({ 
       caption: req.body.filehai,
         img_url:file.url,
-        userid: decode.id
+        userid: req.user.id
  })
 
 
@@ -49,25 +31,9 @@ if(!token){
 }
 
 async function getpostcontroller(req,res) {
-    const token = req.cookies.token
-    
-    if(!token){
-        return res.status(401).json({
-            msg:"Unauthorized access..."
-        })
-    }
-
-    let decode=null;
-    try{
-         decode =  jwt.verify(token,process.env.JWT_SECRETE)
-}catch(err){
-  return  res.status(401).json({
-        msg:"Token is invalid..."
-    })
-}
 
     const post = await postmodel.find({
-        userid:decode.id
+        userid:req.user.id
     })
     
     res.status(200).json({
@@ -77,27 +43,9 @@ async function getpostcontroller(req,res) {
 }
 
 async function getdetailPostcontroller(req,res) {
-    const token = req.cookies.token;
-
-    if(!token){
-        return res.status(401).json({
-            msg:"Unauthorized access..."
-        })
-    }
-    
-    const userid = req.params.postid
- let decode = null;
-
-try{
-    decode =  jwt.verify(token,process.env.JWT_SECRETE) 
-}catch(err){
-    return res.status(401).json({
-       msg:"Invalid Token...."
-    })
-}
-
-   
-
+ 
+const userid = req.params.postid
+ 
     const post = await postmodel.findById(userid)
 
 
@@ -108,7 +56,7 @@ try{
         })
     }
 
-    const isvaliduser  = post.userid.toString() === decode.id
+    const isvaliduser  = post.userid.toString() === req.user.id
 
 
     if(!isvaliduser){
