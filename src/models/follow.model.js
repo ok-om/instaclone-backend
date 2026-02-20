@@ -9,7 +9,7 @@ const followSchema = new mongoose.Schema({
     },
     status:{
         type:String,
-        default:"p  ending",
+        default:"pending",
         enum:{
             values:["accept","pending","reject"],
             msg:"status can me pending,accepted or rejected"
