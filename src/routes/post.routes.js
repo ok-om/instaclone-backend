@@ -12,5 +12,9 @@ postrouter.get("/",identify,postcontroller.getpostcontroller)
 postrouter.get("/detail/:postid",identify,postcontroller.getdetailPostcontroller)
 
 postrouter.post("/like/:postid",identify,postcontroller.likecontroller)
+postrouter.post("/unlike/:postid",identify,postcontroller.unlikecontroller)
+
+
+postrouter.get("/feed",identify,postcontroller.getfeedcontroller)
 
 module.exports = postrouter;

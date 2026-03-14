@@ -19,7 +19,7 @@ async function createPostController(req,res){
   const post = await postmodel.create({ 
       caption: req.body.filehai,
         img_url:file.url,
-        userid: req.user.id
+        user: req.user.id
  })
 
 
@@ -34,7 +34,7 @@ async function createPostController(req,res){
 async function getpostcontroller(req,res) {
 
     const post = await postmodel.find({
-        userid:req.user.id
+        user:req.user.id
     })
     
     res.status(200).json({
@@ -45,9 +45,9 @@ async function getpostcontroller(req,res) {
 
 async function getdetailPostcontroller(req,res) {
  
-const userid = req.params.postid
+const user = req.params.postid
  
-    const post = await postmodel.findById(userid)
+    const post = await postmodel.findById(user)
 
 
 
@@ -57,7 +57,7 @@ const userid = req.params.postid
         })
     }
 
-    const isvaliduser  = post.userid.toString() === req.user.id
+    const isvaliduser  = post.user.toString() === req.user.id
 
 
     if(!isvaliduser){
@@ -108,9 +108,57 @@ async function likecontroller(req,res) {
     })
     
 }
+
+async function unlikecontroller(req,res) {
+    const postid = req.params.postid
+    const username = req.user.username
+
+    const isLiked =  await likemodel.findOne({
+        post:postid,
+        user:username
+    })
+
+    if(!isLiked){
+        return res.status(400).json({
+            message: "Post didn't like"
+        })
+    }
+
+    await likemodel.findOneAndDelete({_id:isLiked._id})
+
+    return res.status(200).json({
+        message:"post unliked successfully"
+    })
+
+}
+
+async function getfeedcontroller(req,res) {
+   
+    const user = req.user
+
+
+      const posts = await Promise.all((await postmodel.find({}).populate("user").lean()).map(async(post)=>{
+
+       const isLiked = await likemodel.findOne({
+        user:user.username,
+        post:post._id
+       })
+
+         post.isLiked = Boolean(isLiked)
+
+         return post
+      }))
+
+      res.status(200).json({
+        msg:"posts fetched successfully.",
+        posts
+      })
+}
 module.exports ={
     createPostController,
     getpostcontroller,
     getdetailPostcontroller,
-    likecontroller
+    likecontroller,
+    getfeedcontroller,
+    unlikecontroller
 }
